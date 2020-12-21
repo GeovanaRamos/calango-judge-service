@@ -2,12 +2,12 @@ package com.calango.interpreter.api.service;
 
 import br.ucb.calango.api.publica.CalangoOut;
 
-public class InterpreterOutService implements CalangoOut{
+public class InterpreterOut implements CalangoOut{
     private static final String BARRA_N = "\n";
     private String error;
     private String message;
 
-    public InterpreterOutService(){
+    public InterpreterOut(){
     }
 
     public void print(Object o) {

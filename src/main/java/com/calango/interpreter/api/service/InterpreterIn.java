@@ -5,10 +5,10 @@ import com.calango.interpreter.api.model.JudgeCase;
 
 import java.util.List;
 
-public class InterpreterInService implements CalangoIn {
+public class InterpreterIn implements CalangoIn {
     private JudgeCase judgeCase;
 
-    public InterpreterInService(JudgeCase judgeCase){
+    public InterpreterIn(JudgeCase judgeCase){
         this.judgeCase = judgeCase;
     }
 

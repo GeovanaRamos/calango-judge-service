@@ -1,5 +1,12 @@
 package com.calango.interpreter.api.service;
 
+import br.ucb.calango.api.publica.CalangoAPI;
+import com.calango.interpreter.api.model.JudgeCase;
+import com.calango.interpreter.api.model.Submission;
+import com.calango.interpreter.api.model.SubmissionResult;
+import org.springframework.stereotype.Component;
+
+@Component
 public class SubmissionService {
     public static final int ACCEPTED = 0;
     public static final int WRONG_ANSWER = 1;
@@ -15,15 +22,34 @@ public class SubmissionService {
     public static final String RUNTIME_ERROR_MESSAGE = "Runtime Error";
     public static final String TIME_LIMIT_EXCEEDED_MESSAGE = "Time Limit Exceeded";
 
-    private int code;
-    private String message;
 
-    public SubmissionService() {
-        this.code = ACCEPTED;
-        this.message = ACCEPTED_MESSAGE;
+    public SubmissionResult judgeSubmission(Submission submission){
+        SubmissionResult submissionResult = new SubmissionResult(ACCEPTED, ACCEPTED_MESSAGE);
+
+        for(JudgeCase judgeCase : submission.getCases()){
+
+            InterpreterIn in = new InterpreterIn(judgeCase);
+            InterpreterOut out = new InterpreterOut();
+            CalangoAPI.setIn(in);
+            CalangoAPI.setOut(out);
+
+            CalangoAPI.interpretar(submission.getCode());
+
+            if (out.getError() != null){
+                this.parseError(out.getError(), submissionResult);
+                return submissionResult;
+            }
+
+            if (!out.getMessage().equals(judgeCase.getOutput())){
+                this.parseMessage(out.getMessage(), judgeCase.getOutput(), submissionResult);
+                return submissionResult;
+            }
+        }
+
+        return submissionResult;
     }
 
-    public void parseError(String error) {
+    public void parseError(String error, SubmissionResult submissionResult) {
         // either COMPILATION or RUNTIME error
         if (error.contains("Não foi encontrado o símbolo esperado") ||
                 error.contains("Foi encontrado o símbolo") ||
@@ -35,39 +61,24 @@ public class SubmissionService {
                 error.contains("não existe") ||
                 error.contains("não é uma função ou procedimento")
         ) {
-            this.code = COMPILATION_ERROR;
-            this.message = COMPILATION_ERROR_MESSAGE;
+            submissionResult.setCode(COMPILATION_ERROR);
+            submissionResult.setMessage(COMPILATION_ERROR_MESSAGE);
         } else {
-            this.code = RUNTIME_ERROR;
-            this.message = RUNTIME_ERROR_MESSAGE;
+            submissionResult.setCode(RUNTIME_ERROR);
+            submissionResult.setMessage(RUNTIME_ERROR_MESSAGE);
         }
     }
 
-    public void parseMessage(String message, String expectedOutput) {
+    public void parseMessage(String message, String expectedOutput,
+                             SubmissionResult submissionResult) {
         // either WRONG ANSWER or PRESENTATION ERROR
         if (expectedOutput.equalsIgnoreCase(message.trim()) ||
                 expectedOutput.trim().equalsIgnoreCase(message)) {
-            this.code = PRESENTATION_ERROR;
-            this.message = PRESENTATION_ERROR_MESSAGE;
+            submissionResult.setCode(PRESENTATION_ERROR);
+            submissionResult.setMessage(PRESENTATION_ERROR_MESSAGE);
         } else {
-            this.code = WRONG_ANSWER;
-            this.message = WRONG_ANSWER_MESSAGE;
+            submissionResult.setCode(WRONG_ANSWER);
+            submissionResult.setMessage(WRONG_ANSWER_MESSAGE);
         }
-    }
-
-    public int getCode() {
-        return code;
-    }
-
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
     }
 }
