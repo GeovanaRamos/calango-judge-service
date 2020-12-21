@@ -1,13 +1,14 @@
-package com.calango.interpreter.api.model;
+package com.calango.interpreter.api.service;
 
 import br.ucb.calango.api.publica.CalangoIn;
+import com.calango.interpreter.api.model.JudgeCase;
+
 import java.util.List;
 
-public class InterpreterIn implements CalangoIn {
+public class InterpreterInService implements CalangoIn {
     private JudgeCase judgeCase;
-    private int i = 0;
 
-    public InterpreterIn(JudgeCase judgeCase){
+    public InterpreterInService(JudgeCase judgeCase){
         this.judgeCase = judgeCase;
     }
 

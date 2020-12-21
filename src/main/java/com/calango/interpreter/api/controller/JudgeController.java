@@ -1,12 +1,14 @@
 package com.calango.interpreter.api.controller;
 
 import com.calango.interpreter.api.model.*;
+import com.calango.interpreter.api.service.InterpreterInService;
+import com.calango.interpreter.api.service.InterpreterOutService;
+import com.calango.interpreter.api.service.SubmissionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import br.ucb.calango.api.publica.CalangoAPI;
 
@@ -15,29 +17,29 @@ public class JudgeController {
 
 
     @PostMapping(value="/judge", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SubmissionResult> getJudgeResult(@RequestBody Submission submission){
+    public ResponseEntity<SubmissionService> getJudgeResult(@RequestBody Submission submission){
 
-        SubmissionResult submissionResult = new SubmissionResult();
+        SubmissionService submissionService = new SubmissionService();
 
         for(JudgeCase judgeCase : submission.getCases()){
-            InterpreterIn in = new InterpreterIn(judgeCase);
-            InterpreterOut out = new InterpreterOut();
+            InterpreterInService in = new InterpreterInService(judgeCase);
+            InterpreterOutService out = new InterpreterOutService();
             CalangoAPI.setIn(in);
             CalangoAPI.setOut(out);
             CalangoAPI.interpretar(submission.getCode());
 
-            if (out.erro != null){
-                submissionResult.parseError(out.erro);
-                return new ResponseEntity<>(submissionResult, HttpStatus.OK);
+            if (out.getError() != null){
+                submissionService.parseError(out.getError());
+                return new ResponseEntity<>(submissionService, HttpStatus.OK);
             }
 
-            if (!out.mensagem.equals(judgeCase.getOutput())){
-                submissionResult.parseMessage(out.mensagem, judgeCase.getOutput());
-                return new ResponseEntity<>(submissionResult, HttpStatus.OK);
+            if (!out.getMessage().equals(judgeCase.getOutput())){
+                submissionService.parseMessage(out.getMessage(), judgeCase.getOutput());
+                return new ResponseEntity<>(submissionService, HttpStatus.OK);
             }
         }
 
-        return new ResponseEntity<>(submissionResult, HttpStatus.OK);
+        return new ResponseEntity<>(submissionService, HttpStatus.OK);
 
     }
 }

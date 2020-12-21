@@ -1,6 +1,6 @@
-package com.calango.interpreter.api.model;
+package com.calango.interpreter.api.service;
 
-public class SubmissionResult {
+public class SubmissionService {
     public static final int ACCEPTED = 0;
     public static final int WRONG_ANSWER = 1;
     public static final int PRESENTATION_ERROR = 2;
@@ -18,7 +18,7 @@ public class SubmissionResult {
     private int code;
     private String message;
 
-    public SubmissionResult() {
+    public SubmissionService() {
         this.code = ACCEPTED;
         this.message = ACCEPTED_MESSAGE;
     }
@@ -44,6 +44,7 @@ public class SubmissionResult {
     }
 
     public void parseMessage(String message, String expectedOutput) {
+        // either WRONG ANSWER or PRESENTATION ERROR
         if (expectedOutput.equalsIgnoreCase(message.trim()) ||
                 expectedOutput.trim().equalsIgnoreCase(message)) {
             this.code = PRESENTATION_ERROR;
