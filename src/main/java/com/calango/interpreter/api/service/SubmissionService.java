@@ -36,6 +36,8 @@ public class SubmissionService {
             //});
             log.info("Init case: " + i);
             //threads[i].start();
+            if (submissionResult.getCode() !=ACCEPTED)
+                break;
             i++;
         }
 
@@ -104,6 +106,8 @@ public class SubmissionService {
                 expectedOutput.trim().equalsIgnoreCase(message)) {
             submissionResult.setCode(PRESENTATION_ERROR);
             submissionResult.setMessage(PRESENTATION_ERROR_MESSAGE);
+            log.info(PRESENTATION_ERROR_MESSAGE + " Expected: " + expectedOutput +
+                    " Actual: " + message);
         } else {
             submissionResult.setCode(WRONG_ANSWER);
             submissionResult.setMessage(WRONG_ANSWER_MESSAGE);

@@ -13,12 +13,16 @@ public class InterpreterIn implements CalangoIn {
     }
 
     public String read() {
+        if (inputPosition == judgeCase.getInput().length)
+            return null;
         String reading = judgeCase.getInputAt(inputPosition);
         inputPosition++;
         return reading;
     }
 
     public Character readChar() {
+        if (inputPosition == judgeCase.getInput().length)
+            return null;
         Character reading = judgeCase.getInputAt(inputPosition).charAt(0);
         inputPosition++;
         return reading;
