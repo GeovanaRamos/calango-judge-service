@@ -27,16 +27,27 @@ public class SubmissionService {
     public SubmissionResult judgeSubmission(Submission submission) {
 
         SubmissionResult submissionResult = new SubmissionResult(ACCEPTED, ACCEPTED_MESSAGE);
-        //Thread[] threads = new Thread[submission.getCases().size()];
+        Thread thread = new Thread();
         int i = 0;
 
         for(JudgeCase judgeCase : submission.getCases()){
-            //threads[i] = new Thread(() -> {
+            thread = new Thread(() -> {
                 callInterpreter(submissionResult, judgeCase, submission);
-            //});
+            });
             log.info("Init case: " + i);
-            //threads[i].start();
-            if (submissionResult.getCode() !=ACCEPTED)
+            thread.start();
+            try {
+                thread.join(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (thread.isAlive()) {
+                thread.stop();
+                submissionResult.setCode(TIME_LIMIT_EXCEEDED);
+                submissionResult.setMessage(TIME_LIMIT_EXCEEDED_MESSAGE);
+                log.info("Interrupted thread " + i);
+            }
+            if (submissionResult.getCode() != ACCEPTED)
                 break;
             i++;
         }
