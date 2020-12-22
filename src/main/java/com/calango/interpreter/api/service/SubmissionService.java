@@ -4,8 +4,10 @@ import br.ucb.calango.api.publica.CalangoAPI;
 import com.calango.interpreter.api.model.JudgeCase;
 import com.calango.interpreter.api.model.Submission;
 import com.calango.interpreter.api.model.SubmissionResult;
+import lombok.extern.java.Log;
 import org.springframework.stereotype.Component;
 
+@Log
 @Component
 public class SubmissionService {
     public static final int ACCEPTED = 0;
@@ -22,34 +24,58 @@ public class SubmissionService {
     public static final String RUNTIME_ERROR_MESSAGE = "Runtime Error";
     public static final String TIME_LIMIT_EXCEEDED_MESSAGE = "Time Limit Exceeded";
 
+    public SubmissionResult judgeSubmission(Submission submission) {
 
-    public SubmissionResult judgeSubmission(Submission submission){
         SubmissionResult submissionResult = new SubmissionResult(ACCEPTED, ACCEPTED_MESSAGE);
+        Thread[] threads = new Thread[submission.getCases().size()];
+        int i = 0;
 
         for(JudgeCase judgeCase : submission.getCases()){
-
-            InterpreterIn in = new InterpreterIn(judgeCase);
-            InterpreterOut out = new InterpreterOut();
-            CalangoAPI.setIn(in);
-            CalangoAPI.setOut(out);
-
-            CalangoAPI.interpretar(submission.getCode());
-
-            if (out.getError() != null){
-                this.parseError(out.getError(), submissionResult);
-                return submissionResult;
-            }
-
-            if (!out.getMessage().equals(judgeCase.getOutput())){
-                this.parseMessage(out.getMessage(), judgeCase.getOutput(), submissionResult);
-                return submissionResult;
-            }
+            threads[i] = new Thread(() -> {
+                callInterpreter(submissionResult, judgeCase, submission);
+            });
+            log.info("Init thread: " + threads[i].getName());
+            threads[i].start();
+            i++;
         }
+
+        try {
+            log.info("Main thread waiting first case...");
+            threads[0].join(5000);
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            log.info("Exception on join");
+        }
+
+        interruptAllThreads(threads, submissionResult);
 
         return submissionResult;
     }
 
-    public void parseError(String error, SubmissionResult submissionResult) {
+    private void callInterpreter(SubmissionResult submissionResult, JudgeCase judgeCase,
+                                 Submission submission){
+        if (submissionResult.getCode() != ACCEPTED)
+            return;
+
+        InterpreterIn in = new InterpreterIn(judgeCase);
+        InterpreterOut out = new InterpreterOut();
+        CalangoAPI.setIn(in);
+        CalangoAPI.setOut(out);
+        CalangoAPI.interpretar(submission.getCode());
+
+        if (submissionResult.getCode() != ACCEPTED)
+            return;
+
+        if (out.getError() != null) {
+            parseError(out.getError(), submissionResult);
+        } else if (out.getMessage() != null &&
+                !out.getMessage().equals(judgeCase.getOutput())) {
+            parseMessage(out.getMessage(), judgeCase.getOutput(), submissionResult);
+        }
+
+    }
+
+    private void parseError(String error, SubmissionResult submissionResult) {
         // either COMPILATION or RUNTIME error
         if (error.contains("Não foi encontrado o símbolo esperado") ||
                 error.contains("Foi encontrado o símbolo") ||
@@ -63,13 +89,15 @@ public class SubmissionService {
         ) {
             submissionResult.setCode(COMPILATION_ERROR);
             submissionResult.setMessage(COMPILATION_ERROR_MESSAGE);
+            log.info(COMPILATION_ERROR_MESSAGE + ": " + error);
         } else {
             submissionResult.setCode(RUNTIME_ERROR);
             submissionResult.setMessage(RUNTIME_ERROR_MESSAGE);
+            log.info(RUNTIME_ERROR_MESSAGE + ": " + error);
         }
     }
 
-    public void parseMessage(String message, String expectedOutput,
+    private void parseMessage(String message, String expectedOutput,
                              SubmissionResult submissionResult) {
         // either WRONG ANSWER or PRESENTATION ERROR
         if (expectedOutput.equalsIgnoreCase(message.trim()) ||
@@ -81,4 +109,16 @@ public class SubmissionService {
             submissionResult.setMessage(WRONG_ANSWER_MESSAGE);
         }
     }
+
+    private void interruptAllThreads(Thread[] threads, SubmissionResult submissionResult){
+        for (Thread th : threads ){
+            if (th.isAlive()) {
+                th.stop();
+                submissionResult.setCode(TIME_LIMIT_EXCEEDED);
+                submissionResult.setMessage(TIME_LIMIT_EXCEEDED_MESSAGE);
+                log.info("Interrupted thread " + th.getName());
+            }
+        }
+    }
+
 }

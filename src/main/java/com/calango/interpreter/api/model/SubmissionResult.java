@@ -9,19 +9,19 @@ public class SubmissionResult {
         this.message = message;
     }
 
-    public int getCode() {
+    public synchronized int getCode() {
         return code;
     }
 
-    public void setCode(int code) {
+    public synchronized void setCode(int code) {
         this.code = code;
     }
 
-    public String getMessage() {
+    public synchronized String getMessage() {
         return message;
     }
 
-    public void setMessage(String message) {
+    public synchronized void setMessage(String message) {
         this.message = message;
     }
 }
