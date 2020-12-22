@@ -27,27 +27,27 @@ public class SubmissionService {
     public SubmissionResult judgeSubmission(Submission submission) {
 
         SubmissionResult submissionResult = new SubmissionResult(ACCEPTED, ACCEPTED_MESSAGE);
-        Thread[] threads = new Thread[submission.getCases().size()];
+        //Thread[] threads = new Thread[submission.getCases().size()];
         int i = 0;
 
         for(JudgeCase judgeCase : submission.getCases()){
-            threads[i] = new Thread(() -> {
+            //threads[i] = new Thread(() -> {
                 callInterpreter(submissionResult, judgeCase, submission);
-            });
-            log.info("Init thread: " + threads[i].getName());
-            threads[i].start();
+            //});
+            log.info("Init case: " + i);
+            //threads[i].start();
             i++;
         }
 
-        try {
-            log.info("Main thread waiting first case...");
-            threads[0].join(5000);
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            log.info("Exception on join");
-        }
+//        try {
+//            log.info("Main thread waiting first case...");
+//            threads[0].join(5000);
+//            Thread.sleep(1000);
+//        } catch (InterruptedException e) {
+//            log.info("Exception on join");
+//        }
 
-        interruptAllThreads(threads, submissionResult);
+        //interruptAllThreads(threads, submissionResult);
 
         return submissionResult;
     }
@@ -112,15 +112,15 @@ public class SubmissionService {
         }
     }
 
-    private void interruptAllThreads(Thread[] threads, SubmissionResult submissionResult){
-        for (Thread th : threads ){
-            if (th.isAlive()) {
-                th.stop();
-                submissionResult.setCode(TIME_LIMIT_EXCEEDED);
-                submissionResult.setMessage(TIME_LIMIT_EXCEEDED_MESSAGE);
-                log.info("Interrupted thread " + th.getName());
-            }
-        }
-    }
+//    private void interruptAllThreads(Thread[] threads, SubmissionResult submissionResult){
+//        for (Thread th : threads ){
+//            if (th.isAlive()) {
+//                th.stop();
+//                submissionResult.setCode(TIME_LIMIT_EXCEEDED);
+//                submissionResult.setMessage(TIME_LIMIT_EXCEEDED_MESSAGE);
+//                log.info("Interrupted thread " + th.getName());
+//            }
+//        }
+//    }
 
 }
