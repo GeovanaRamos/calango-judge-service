@@ -1,15 +1,7 @@
 package com.calango.interpreter.api.model;
 
 public class JudgeCase {
-    public String getInput() {
-        return input;
-    }
-
-    public void setInput(String input) {
-        this.input = input;
-    }
-
-    private String input;
+    private String[] input;
 
     public String getOutput() {
         return output;
@@ -20,4 +12,16 @@ public class JudgeCase {
     }
 
     private String output;
+
+    public void setInput(String[] input) {
+        this.input = input;
+    }
+
+    public String[] getInput() {
+        return input;
+    }
+
+    public String getInputAt(int i){
+        return input[i];
+    }
 }

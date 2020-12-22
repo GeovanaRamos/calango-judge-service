@@ -107,6 +107,8 @@ public class SubmissionService {
         } else {
             submissionResult.setCode(WRONG_ANSWER);
             submissionResult.setMessage(WRONG_ANSWER_MESSAGE);
+            log.info(WRONG_ANSWER_MESSAGE + " Expected: " + expectedOutput +
+                    " Actual: " + message);
         }
     }
 
