@@ -4,9 +4,7 @@ public class SubmissionResult {
     private int code;
     private String message;
 
-    public SubmissionResult(int code, String message) {
-        this.code = code;
-        this.message = message;
+    public SubmissionResult() {
     }
 
     public synchronized int getCode() {

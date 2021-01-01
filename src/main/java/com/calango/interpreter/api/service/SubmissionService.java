@@ -10,12 +10,12 @@ import org.springframework.stereotype.Component;
 @Log
 @Component
 public class SubmissionService {
-    public static final int ACCEPTED = 0;
-    public static final int WRONG_ANSWER = 1;
-    public static final int PRESENTATION_ERROR = 2;
-    public static final int COMPILATION_ERROR = 3;
-    public static final int RUNTIME_ERROR = 4;
-    public static final int TIME_LIMIT_EXCEEDED = 5;
+    public static final int ACCEPTED = 1;
+    public static final int WRONG_ANSWER = 2;
+    public static final int PRESENTATION_ERROR = 3;
+    public static final int COMPILATION_ERROR = 4;
+    public static final int RUNTIME_ERROR = 5;
+    public static final int TIME_LIMIT_EXCEEDED = 6;
 
     public static final String ACCEPTED_MESSAGE = "Accepted";
     public static final String WRONG_ANSWER_MESSAGE = "Wrong Answer";
@@ -26,11 +26,13 @@ public class SubmissionService {
 
     public SubmissionResult judgeSubmission(Submission submission) {
 
-        SubmissionResult submissionResult = new SubmissionResult(ACCEPTED, ACCEPTED_MESSAGE);
-        Thread thread = new Thread();
+        SubmissionResult submissionResult = new SubmissionResult();
+        Thread thread;
         int i = 0;
 
         for(JudgeCase judgeCase : submission.getCases()){
+            if (submissionResult.getCode() != 0 && submissionResult.getCode() != ACCEPTED)
+                break;
             thread = new Thread(() -> {
                 callInterpreter(submissionResult, judgeCase, submission);
             });
@@ -67,23 +69,20 @@ public class SubmissionService {
 
     private void callInterpreter(SubmissionResult submissionResult, JudgeCase judgeCase,
                                  Submission submission){
-        if (submissionResult.getCode() != ACCEPTED)
-            return;
-
         InterpreterIn in = new InterpreterIn(judgeCase);
         InterpreterOut out = new InterpreterOut();
         CalangoAPI.setIn(in);
         CalangoAPI.setOut(out);
         CalangoAPI.interpretar(submission.getCode());
 
-        if (submissionResult.getCode() != ACCEPTED)
-            return;
-
         if (out.getError() != null) {
             parseError(out.getError(), submissionResult);
-        } else if (out.getMessage() != null &&
-                !out.getMessage().equals(judgeCase.getOutput())) {
+        } else if (out.getMessage() != null) {
             parseMessage(out.getMessage(), judgeCase.getOutput(), submissionResult);
+        } else {
+            submissionResult.setCode(RUNTIME_ERROR);
+            submissionResult.setMessage(RUNTIME_ERROR_MESSAGE);
+            log.info(RUNTIME_ERROR_MESSAGE + ": null return");
         }
 
     }
@@ -112,8 +111,12 @@ public class SubmissionService {
 
     private void parseMessage(String message, String expectedOutput,
                              SubmissionResult submissionResult) {
-        // either WRONG ANSWER or PRESENTATION ERROR
-        if (expectedOutput.equalsIgnoreCase(message.trim()) ||
+        // if not ACCEPTED, either WRONG ANSWER or PRESENTATION ERROR
+
+        if (message.equals(expectedOutput)){
+            submissionResult.setCode(ACCEPTED);
+            submissionResult.setMessage(ACCEPTED_MESSAGE);
+        } else if (expectedOutput.equalsIgnoreCase(message.trim()) ||
                 expectedOutput.trim().equalsIgnoreCase(message)) {
             submissionResult.setCode(PRESENTATION_ERROR);
             submissionResult.setMessage(PRESENTATION_ERROR_MESSAGE);
