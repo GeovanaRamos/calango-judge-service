@@ -17,12 +17,12 @@ public class SubmissionService {
     public static final int RUNTIME_ERROR = 5;
     public static final int TIME_LIMIT_EXCEEDED = 6;
 
-    public static final String ACCEPTED_MESSAGE = "Accepted";
-    public static final String WRONG_ANSWER_MESSAGE = "Wrong Answer";
-    public static final String PRESENTATION_ERROR_MESSAGE = "Presentation Error";
-    public static final String COMPILATION_ERROR_MESSAGE = "Compilation Error";
-    public static final String RUNTIME_ERROR_MESSAGE = "Runtime Error";
-    public static final String TIME_LIMIT_EXCEEDED_MESSAGE = "Time Limit Exceeded";
+    public static final String ACCEPTED_MESSAGE = "ACCEPTED";
+    public static final String WRONG_ANSWER_MESSAGE = "WRONG_ANSWER";
+    public static final String PRESENTATION_ERROR_MESSAGE = "PRESENTATION_ERROR";
+    public static final String COMPILATION_ERROR_MESSAGE = "COMPILATION_ERROR";
+    public static final String RUNTIME_ERROR_MESSAGE = "RUNTIME_ERROR";
+    public static final String TIME_LIMIT_EXCEEDED_MESSAGE = "TIME_LIMIT_EXCEEDED";
 
     public SubmissionResult judgeSubmission(Submission submission) {
 
