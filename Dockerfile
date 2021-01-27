@@ -3,7 +3,7 @@ RUN mkdir -p /workspace
 WORKDIR /workspace
 COPY pom.xml /workspace
 COPY src /workspace/src
-COPY libs /workspace/libs
+COPY local-maven-repo /workspace/local-maven-repo
 RUN mvn -B -f pom.xml clean package -DskipTests
 
 FROM openjdk:11-jdk-slim
