@@ -1,0 +1,26 @@
+name: Continuous Delivery
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Push Docker image to GitHub Packages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Push to GitHub Packages
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: docker.pkg.github.com
+          name: GeovanaRamos/calango-judge-service/coj-service
+          default_branch: master
+          dockerfile: Dockerfile
+
+
+
