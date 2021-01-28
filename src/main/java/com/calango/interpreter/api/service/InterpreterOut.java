@@ -16,7 +16,7 @@ public class InterpreterOut implements CalangoOut{
         message = message + o.toString();
     }
 
-    public void printErro(Object o) {
+    public void printErro(int line, Object o) {
         error = error + o.toString() + "\n";
     }
 

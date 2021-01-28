@@ -27,9 +27,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>br.ucb.calango</groupId>
-            <artifactId>interpreter</artifactId>
-            <version>0.0.1</version>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr-master</artifactId>
+            <version>4.9.1</version>
         </dependency>
 
         <dependency>
@@ -47,6 +47,8 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+
     </dependencies>
 
     <build>
