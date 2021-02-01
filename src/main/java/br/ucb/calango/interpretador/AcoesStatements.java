@@ -3,7 +3,31 @@ package br.ucb.calango.interpretador;
 import br.ucb.calango.api.publica.CalangoAPI;
 import br.ucb.calango.arvore.CalangoTree;
 import br.ucb.calango.escopo.Escopo;
-import br.ucb.calango.exceptions.erros.*;
+import br.ucb.calango.exceptions.erros.ArgumentoIncompativelEmMatrizException;
+import br.ucb.calango.exceptions.erros.ArgumentoIncompativelEmVetorException;
+import br.ucb.calango.exceptions.erros.AtribuicaoMetodoException;
+import br.ucb.calango.exceptions.erros.AtribuicaoRetornoProcedimentoException;
+import br.ucb.calango.exceptions.erros.ContadorIgualValorFinalException;
+import br.ucb.calango.exceptions.erros.ExpressaoIncompativelException;
+import br.ucb.calango.exceptions.erros.FuncaoNaoRetornouException;
+import br.ucb.calango.exceptions.erros.LeiaCaracterException;
+import br.ucb.calango.exceptions.erros.LeiaCaracterTipoException;
+import br.ucb.calango.exceptions.erros.LeiaLiteralException;
+import br.ucb.calango.exceptions.erros.LeiaLogicoException;
+import br.ucb.calango.exceptions.erros.LeiaVetorNaoIndexadoException;
+import br.ucb.calango.exceptions.erros.LiteralPorReferenciaException;
+import br.ucb.calango.exceptions.erros.MetodoInexistenteException;
+import br.ucb.calango.exceptions.erros.NumberoDeParametrosIncorreto;
+import br.ucb.calango.exceptions.erros.ParametroIncompativelException;
+import br.ucb.calango.exceptions.erros.PassoZeroException;
+import br.ucb.calango.exceptions.erros.PosicaoInexistenteException;
+import br.ucb.calango.exceptions.erros.ProcedimentoRetornandoException;
+import br.ucb.calango.exceptions.erros.RetornoTiposIncompativeisException;
+import br.ucb.calango.exceptions.erros.TamanhoMatrizIncompativelException;
+import br.ucb.calango.exceptions.erros.TiposIncompativeisException;
+import br.ucb.calango.exceptions.erros.TiposParametrosIncompativeisException;
+import br.ucb.calango.exceptions.erros.VariavelNaoIndexadaException;
+import br.ucb.calango.exceptions.erros.VetorNaoMatrizException;
 import br.ucb.calango.exceptions.statements.InterrompeStatementException;
 import br.ucb.calango.exceptions.statements.RetornaValueException;
 import br.ucb.calango.gramatica.Algoritmo;
@@ -12,7 +36,6 @@ import br.ucb.calango.simbolos.SimboloLiteral;
 import br.ucb.calango.simbolos.SimboloMetodo;
 import br.ucb.calango.simbolos.SimboloVariavel;
 import br.ucb.calango.util.AcoesUtil;
-
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,7 +83,7 @@ public class AcoesStatements {
       }
 
       Simbolo atribuicao = Interpretador.exec((CalangoTree)tree.getChild(1));
-      if (br.ucb.calango.interpretador.AcoesStatements.RetornoProcedimento.class.equals(atribuicao.getTipo())) {
+      if (AcoesStatements.RetornoProcedimento.class.equals(atribuicao.getTipo())) {
          throw new AtribuicaoRetornoProcedimentoException();
       } else {
          Object valor = atribuicao.getValor();
@@ -199,7 +222,7 @@ public class AcoesStatements {
       } else {
          Character input = CalangoAPI.readChar();
          if (firstChild.getType() == 91) {
-            var.setValor((Object)input);
+            var.setValor(input);
             SimboloVariavel vetor = (SimboloVariavel)Interpretador.exec((CalangoTree)firstChild.getChild(0));
             Integer posicao = (Integer)Interpretador.exec((CalangoTree)firstChild.getChild(1)).getValor(Integer.class);
             Integer posicaoMatriz = null;
@@ -228,15 +251,15 @@ public class AcoesStatements {
          if (passo == 0) {
             throw new PassoZeroException();
          } else {
-            br.ucb.calango.interpretador.AcoesStatements.Comparacao condicao;
+            AcoesStatements.Comparacao condicao;
             if (passo > 0) {
-               condicao = new br.ucb.calango.interpretador.AcoesStatements.Comparacao() {
+               condicao = new AcoesStatements.Comparacao() {
                   public boolean comparacao(int i, int fim) {
                      return i <= fim;
                   }
                };
             } else {
-               condicao = new br.ucb.calango.interpretador.AcoesStatements.Comparacao() {
+               condicao = new AcoesStatements.Comparacao() {
                   public boolean comparacao(int i, int fim) {
                      return i >= fim;
                   }
@@ -327,6 +350,9 @@ public class AcoesStatements {
                   if (metodo.isProcedimento()) {
                      throw new ProcedimentoRetornandoException();
                   }
+                  if (var19.getValue() == null) {
+                     break label151;
+                  }
                }
 
                try {
@@ -341,6 +367,7 @@ public class AcoesStatements {
                   if (!var9.hasNext()) {
                      CalangoAPI.passo("FIM SUBPROGRAMA", metodo.getLineEnd());
                      Algoritmo.popEscopo();
+                     break;
                   } else {
                      String id = (String)var9.next();
                      if (id.contains("-")) {
@@ -362,8 +389,14 @@ public class AcoesStatements {
                }
             }
 
+            return var7;
          }
 
+         if (metodo.isFuncao()) {
+            throw new FuncaoNaoRetornouException(metodo.getIdentificador());
+         } else {
+            return new SimboloLiteral(AcoesStatements.RetornoProcedimento.class, new AcoesStatements.RetornoProcedimento());
+         }
       }
    }
 
@@ -509,3 +542,4 @@ public class AcoesStatements {
    static class RetornoProcedimento {
    }
 }
+
