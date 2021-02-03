@@ -30,7 +30,7 @@ public class SubmissionService {
         Thread thread;
         int i = 0;
 
-        for(JudgeCase judgeCase : submission.getCases()){
+        for (JudgeCase judgeCase : submission.getCases()) {
             if (submissionResult.getCode() != 0 && submissionResult.getCode() != ACCEPTED)
                 break;
             thread = new Thread(() -> {
@@ -54,26 +54,20 @@ public class SubmissionService {
             i++;
         }
 
-//        try {
-//            log.info("Main thread waiting first case...");
-//            threads[0].join(5000);
-//            Thread.sleep(1000);
-//        } catch (InterruptedException e) {
-//            log.info("Exception on join");
-//        }
-
-        //interruptAllThreads(threads, submissionResult);
-
         return submissionResult;
     }
 
     private void callInterpreter(SubmissionResult submissionResult, JudgeCase judgeCase,
-                                 Submission submission){
+                                 Submission submission) {
+
         InterpreterIn in = new InterpreterIn(judgeCase);
         InterpreterOut out = new InterpreterOut();
-        CalangoAPI.setIn(in);
-        CalangoAPI.setOut(out);
-        CalangoAPI.interpretar(submission.getCode());
+
+        synchronized (this) {
+            CalangoAPI.setIn(in);
+            CalangoAPI.setOut(out);
+            CalangoAPI.interpretar(submission.getCode());
+        }
 
         if (out.getError() != null) {
             parseError(out.getError(), submissionResult);
@@ -82,7 +76,7 @@ public class SubmissionService {
         } else {
             submissionResult.setCode(RUNTIME_ERROR);
             submissionResult.setMessage(RUNTIME_ERROR_MESSAGE);
-            log.info(RUNTIME_ERROR_MESSAGE + ": null return");
+            submissionResult.setErrorMessage("Null return");
         }
 
     }
@@ -101,44 +95,33 @@ public class SubmissionService {
         ) {
             submissionResult.setCode(COMPILATION_ERROR);
             submissionResult.setMessage(COMPILATION_ERROR_MESSAGE);
-            log.info(COMPILATION_ERROR_MESSAGE + ": " + error);
+            submissionResult.setErrorMessage(error);
         } else {
             submissionResult.setCode(RUNTIME_ERROR);
             submissionResult.setMessage(RUNTIME_ERROR_MESSAGE);
-            log.info(RUNTIME_ERROR_MESSAGE + ": " + error);
+            submissionResult.setErrorMessage(error);
         }
     }
 
     private void parseMessage(String message, String expectedOutput,
-                             SubmissionResult submissionResult) {
+                              SubmissionResult submissionResult) {
         // if not ACCEPTED, either WRONG ANSWER or PRESENTATION ERROR
 
-        if (message.equals(expectedOutput)){
+        if (message.equals(expectedOutput)) {
             submissionResult.setCode(ACCEPTED);
             submissionResult.setMessage(ACCEPTED_MESSAGE);
         } else if (expectedOutput.equalsIgnoreCase(message.trim()) ||
                 expectedOutput.trim().equalsIgnoreCase(message)) {
             submissionResult.setCode(PRESENTATION_ERROR);
             submissionResult.setMessage(PRESENTATION_ERROR_MESSAGE);
-            log.info(PRESENTATION_ERROR_MESSAGE + " Expected: " + expectedOutput +
+            submissionResult.setErrorMessage("Expected: " + expectedOutput +
                     " Actual: " + message);
         } else {
             submissionResult.setCode(WRONG_ANSWER);
             submissionResult.setMessage(WRONG_ANSWER_MESSAGE);
-            log.info(WRONG_ANSWER_MESSAGE + " Expected: " + expectedOutput +
+            submissionResult.setErrorMessage("Expected: " + expectedOutput +
                     " Actual: " + message);
         }
     }
-
-//    private void interruptAllThreads(Thread[] threads, SubmissionResult submissionResult){
-//        for (Thread th : threads ){
-//            if (th.isAlive()) {
-//                th.stop();
-//                submissionResult.setCode(TIME_LIMIT_EXCEEDED);
-//                submissionResult.setMessage(TIME_LIMIT_EXCEEDED_MESSAGE);
-//                log.info("Interrupted thread " + th.getName());
-//            }
-//        }
-//    }
 
 }
