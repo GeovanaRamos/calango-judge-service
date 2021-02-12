@@ -4,10 +4,9 @@ import br.ucb.calango.api.publica.CalangoAPI;
 import com.calango.interpreter.api.model.JudgeCase;
 import com.calango.interpreter.api.model.Submission;
 import com.calango.interpreter.api.model.SubmissionResult;
-import lombok.extern.java.Log;
 import org.springframework.stereotype.Component;
 
-@Log
+
 @Component
 public class SubmissionService {
     public static final int ACCEPTED = 1;
@@ -28,7 +27,6 @@ public class SubmissionService {
 
         SubmissionResult submissionResult = new SubmissionResult();
         Thread thread;
-        int i = 0;
 
         for (JudgeCase judgeCase : submission.getCases()) {
             if (submissionResult.getCode() != 0 && submissionResult.getCode() != ACCEPTED)
@@ -36,7 +34,6 @@ public class SubmissionService {
             thread = new Thread(() -> {
                 callInterpreter(submissionResult, judgeCase, submission);
             });
-            log.info("Init case: " + i);
             thread.start();
             try {
                 thread.join(5000);
@@ -47,11 +44,9 @@ public class SubmissionService {
                 thread.stop();
                 submissionResult.setCode(TIME_LIMIT_EXCEEDED);
                 submissionResult.setMessage(TIME_LIMIT_EXCEEDED_MESSAGE);
-                log.info("Interrupted thread " + i);
             }
             if (submissionResult.getCode() != ACCEPTED)
                 break;
-            i++;
         }
 
         return submissionResult;
@@ -110,8 +105,7 @@ public class SubmissionService {
         if (message.equals(expectedOutput)) {
             submissionResult.setCode(ACCEPTED);
             submissionResult.setMessage(ACCEPTED_MESSAGE);
-        } else if (expectedOutput.equalsIgnoreCase(message.trim()) ||
-                expectedOutput.trim().equalsIgnoreCase(message)) {
+        } else if (checkPresentationError(message, expectedOutput)) {
             submissionResult.setCode(PRESENTATION_ERROR);
             submissionResult.setMessage(PRESENTATION_ERROR_MESSAGE);
             submissionResult.setErrorMessage("Expected: " + expectedOutput +
@@ -122,6 +116,13 @@ public class SubmissionService {
             submissionResult.setErrorMessage("Expected: " + expectedOutput +
                     " Actual: " + message);
         }
+    }
+
+    private boolean checkPresentationError(String message, String expectedOutput) {
+        String strippedMessage = message.replaceAll("[\\s\\n]","");
+        String strippedExpected = expectedOutput.replaceAll("[\\s\\n]","");
+
+        return strippedMessage.equalsIgnoreCase(strippedExpected);
     }
 
 }
