@@ -17,7 +17,7 @@
                 </repository>
                 <repository>
                     <id>github</id>
-                    <url>${env.REPOSITORY_URL}</url>
+                    <url>https://maven.pkg.github.com/geovanaramos/*</url>
                     <snapshots>
                         <enabled>true</enabled>
                     </snapshots>
