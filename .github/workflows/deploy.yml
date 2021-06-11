@@ -18,6 +18,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: docker.pkg.github.com
+          buildargs: ${{REPOSITORY_URL}}, ${{SERVER_USERNAME}}, ${{SERVER_PASSWORD}}
           name: GeovanaRamos/calango-judge-service/service
           default_branch: main
           dockerfile: Dockerfile
